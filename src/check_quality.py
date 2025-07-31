@@ -136,6 +136,7 @@ def main() -> None:
                         else:
                             mode = "Benchmark find"
                 
+                line_number = 1
                 mode = "Benchmark find"
                 word = ""
                 
@@ -190,7 +191,7 @@ def main() -> None:
                                 allocation = Allocation()
                                 allocation.path = location
                                 allocation.function_name = current_function_name
-                                print(f"FIND allocation in {location}") ##
+                                print(f"FIND test in {location}") ##
                             else:
                                 word = ""
                                 mode = "Benchmark find"
@@ -228,7 +229,7 @@ def main() -> None:
                         if symbol in " \t\n\r":
                             if len(type_name) > 0:
                                 parse_mode = "find var"
-                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_':
+                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')):
                             type_name += symbol
                         else:
                             type_name = ""
@@ -245,8 +246,8 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
-                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_':
+                            type_name = variable_name = ""
+                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')):
                             variable_name += symbol
                         elif symbol in ",)" and arg_mode:
                             parse_mode = "find type"
@@ -257,7 +258,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
+                            type_name = variable_name = ""
                         else:
                             if symbol == "(" and len(variable_name) > 0:
                                 arg_mode = True
@@ -278,7 +279,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
+                            type_name = variable_name = ""
                         elif symbol in ",)" and arg_mode:
                             parse_mode = "find type"
                             result = Variable()
@@ -288,17 +289,22 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
+                            type_name = variable_name = ""
                         else:
                             if symbol == "(":
                                 arg_mode = True
                                 function_name = variable_name
-                            parse_mode = "find type"
-                            variable_name = ""
-                            type_name = ""
+                            if (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')):
+                                type_name = variable_name
+                                variable_name = symbol
+                                parse_mode = "find var"
+                            else:
+                                parse_mode = "find type"
+                                variable_name = ""
+                                type_name = ""
                     
                     if function_search_mode:
-                        # print(f"FSM {symbol}") #
+                        print(f"FSM {symbol} {line_number}") ##
                         if symbol in " \n\t\r":
                             pass
                         elif symbol == "{":
@@ -313,6 +319,9 @@ def main() -> None:
                         function_search_mode = True
                     if arg_mode and symbol == ',':
                         arg_count += 1
+                    
+                    if location == "basic.Interprocedural2":
+                        print(f"{symbol} {parse_mode} {line_number} {function_name} {current_function_name} {type_name} {variable_name}") ##
                         
 
             allocations.append(allocation)
@@ -370,7 +379,37 @@ def main() -> None:
         must_not_be : Set[Tuple[int, int]] = set()
         alloc_id_to_info : Dict[int, str] = {}
         var_id_to_info : Dict[int, str] = {}
+        
+        loc_fun_num_name : List[Tuple[str, str, str, str]] = [
+            ("basic.Branching1", "main", "%1", "a"),
+            ("basic.Branching1", "main", "%3", "b"),
+            ("basic.Interprocedural1", "main", "%4", "x"),
+            ("basic.Interprocedural1", "main", "%4", "y"),
+            ("basic.Interprocedural2", "main", "%4", "x"),
+            ("basic.Interprocedural2", "main", "%4", "y"),
+            ("basic.Loops2", "test", "%4", "o"),
+            ("basic.Recursion1", "test", "%4", "n"),
+            ("basic.ReturnValue1", "main", "%2", "b"),
+            ("basic.ReturnValue2", "main", "%4", "b"),
+            ("basic.SimpleAlias1", "main", "%0", "a"),
+            ("basic.SimpleAlias1", "main", "%0", "b"),
+            #("", "", "", ""),
+        ]
+        for loc, fun, num, name in loc_fun_num_name:
+            file_to_function_to_name_to_local_id[loc][fun][name] = file_to_function_to_name_to_local_id[loc][fun][num]
+        
+        loc_fun_pos_name : List[Tuple[str, str, int, str]] = [
+            ("basic.Parameter1", "test", 0, "b"),
+            ("basic.Parameter2", "test", 0, "b"),
+        ]
+        for loc, fun, pos, name in loc_fun_pos_name:
+            if fun not in file_to_function_to_name_to_local_id[loc].keys():
+                file_to_function_to_name_to_local_id[loc][fun] = dict()
+            file_to_function_to_name_to_local_id[loc][fun][name] = file_to_method_to_order_to_arg_id[loc][fun][pos]
+        
         for allocation in allocations:
+            if allocation.path in {"basic.ReturnValue3"}:
+                continue
             for concrete_alloc in allocation.dictionary:
                 # print(file_to_line_number_to_alloc_local_id.keys(), allocation.path) #
                 alloc_id = file_to_line_number_to_alloc_id[allocation.path][concrete_alloc.alloc_id]
@@ -383,14 +422,14 @@ def main() -> None:
                         var_id = file_to_method_to_order_to_arg_id[allocation.path][var.function_name][var.position]
                         var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({variable_name}) of {var.function_name}"
                     else:
-                        print(allocation.path) ##
-                        print(file_to_line_number_to_alloc_id[allocation.path].keys()) ##
+                        print(f"PROCESS {allocation.path}") ##
                         print(var.line_number) ##
-                        print(f"({allocation.function_name})") ##
+                        print(f"({allocation.function_name}) ({var.name})") ##
+                        print(file_to_function_to_name_to_local_id[allocation.path][allocation.function_name].keys()) ##
                         var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
                         var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     may_be.add((var_id, alloc_id))
-                for variable_name in concrete_alloc.may_alias:
+                for variable_name in concrete_alloc.not_may_alias:
                     var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
@@ -401,7 +440,7 @@ def main() -> None:
                         var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
                         var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     may_not_be.add((var_id, alloc_id))
-                for variable_name in concrete_alloc.may_alias:
+                for variable_name in concrete_alloc.must_alias:
                     var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
@@ -412,7 +451,7 @@ def main() -> None:
                         var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
                         var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     must_be.add((var_id, alloc_id))
-                for variable_name in concrete_alloc.may_alias:
+                for variable_name in concrete_alloc.not_must_alias:
                     var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
@@ -428,12 +467,14 @@ def main() -> None:
             results = set(map(lambda l: tuple(map(int, l.split())), file.readlines()))
             for pair in results:
                 if pair not in may_be:
-                    print(f"Violation: pair {pair} not in may be\n{alloc_id_to_info[pair[0]]} <-> {var_id_to_info[pair[1]]}")
+                    print(f"Violation FP: pair {pair} not in may be")
+                    
+                    print(f"{alloc_id_to_info.get(pair[0])} <-> {var_id_to_info.get(pair[1])}")
                 if pair in must_not_be:
-                    print(f"Violation: pair {pair} in must not be\n{alloc_id_to_info[pair[0]]} <-> {var_id_to_info[pair[1]]}")
+                    print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[0])} <-> {var_id_to_info.get(pair[1])}")
             for pair in must_be:
                 if pair not in results:
-                    print(f"Violation: pair {pair} must be but not in results\n{alloc_id_to_info[pair[0]]} <-> {var_id_to_info[pair[1]]}")
+                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[0])} <-> {var_id_to_info.get(pair[1])}")
 
 if __name__ == "__main__":
     main()
