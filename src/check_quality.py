@@ -17,6 +17,7 @@ class AllocationInfo:
 class Allocation:
     path: str
     name: str
+    function_name : str
     dictionary: List[AllocationInfo]
 
 class Variable:
@@ -80,12 +81,6 @@ def main() -> None:
                 number = 0
                 allocation: Allocation = Allocation()
                 
-                parse_mode = "find type"
-                type_name = ""
-                variable_name = ""
-                function_name = ""
-                arg_mode = False
-                arg_count = 0
                 for symbol in code:
                     if symbol == '\n':
                         line_number += 1
@@ -140,85 +135,19 @@ def main() -> None:
                             mode = "Benchmark find"
                         else:
                             mode = "Benchmark find"
-                    
-                    if parse_mode == "find type":
-                        if symbol in " \t\n\r":
-                            if len(type_name) > 0:
-                                parse_mode = "find var"
-                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_':
-                            type_name += symbol
-                        else:
-                            type_name = ""
-                    elif parse_mode == "find var":
-                        if symbol in " \t\n\r":
-                            if len(variable_name) > 0:
-                                parse_mode = "find end"
-                        elif symbol in "=;":
-                            parse_mode = "find type"
-                            result = Variable()
-                            result.name = variable_name
-                            result.line_number = line_number
-                            result.position = arg_count if arg_mode else None
-                            result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
-                            location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
-                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_':
-                            variable_name += symbol
-                        elif symbol in ",)" and arg_mode:
-                            parse_mode = "find type"
-                            result = Variable()
-                            result.name = variable_name
-                            result.line_number = line_number
-                            result.position = arg_count
-                            result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
-                            location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
-                        else:
-                            if symbol == "(":
-                                arg_mode = True
-                                function_name = variable_name
-                            parse_mode = "find type"
-                            variable_name = ""
-                            type_name = ""
-                    elif parse_mode == "find end":
-                        if symbol in " \t\n\r":
-                            pass
-                        elif symbol in "=;":
-                            parse_mode = "find type"
-                            result = Variable()
-                            result.name = variable_name
-                            result.line_number = line_number
-                            result.position = arg_count if arg_mode else None
-                            result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
-                            location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
-                        elif symbol in ",)" and arg_mode:
-                            parse_mode = "find type"
-                            result = Variable()
-                            result.name = variable_name
-                            result.line_number = line_number
-                            result.position = arg_count
-                            result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
-                            location_to_name_to_variables[location][result.name] = result
-                            type_name = variable_name = function_name = ""
-                        else:
-                            if symbol == "(":
-                                arg_mode = True
-                                function_name = variable_name
-                            parse_mode = "find type"
-                            variable_name = ""
-                            type_name = ""
-                    
-                    if arg_mode and symbol == ')':
-                        arg_mode = False
-                        arg_count = 0
-                    if arg_mode and symbol == ',':
-                        arg_count += 1
-            
+                
+                mode = "Benchmark find"
+                word = ""
+                
+                parse_mode = "find type"
+                type_name = ""
+                variable_name = ""
+                function_name = ""
+                arg_mode = False
+                arg_count = 0
+                
+                current_function_name = ""
+                function_search_mode = False
                 for symbol in code:
                     if symbol == '\n':
                         line_number += 1
@@ -260,6 +189,8 @@ def main() -> None:
                                 mode = "String parse"
                                 allocation = Allocation()
                                 allocation.path = location
+                                allocation.function_name = current_function_name
+                                print(f"FIND allocation in {location}") ##
                             else:
                                 word = ""
                                 mode = "Benchmark find"
@@ -278,7 +209,7 @@ def main() -> None:
                         elif symbol == ")":
                             allocation.dictionary = [transform_str_to_allocation_info(d) for d in word[1:].split(",{")]
                             for d in allocation.dictionary:
-                                # print(alloc_id_to_line) ##
+                                # print(alloc_id_to_line) #
                                 d.alloc_id = alloc_id_to_line[d.alloc_id]
                             word = ""
                             mode = "Benchmark find"
@@ -292,11 +223,103 @@ def main() -> None:
                             mode = "String parse second"
                         else:
                             word += symbol
+                    
+                    if parse_mode == "find type":
+                        if symbol in " \t\n\r":
+                            if len(type_name) > 0:
+                                parse_mode = "find var"
+                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_':
+                            type_name += symbol
+                        else:
+                            type_name = ""
+                    elif parse_mode == "find var":
+                        if symbol in " \t\n\r":
+                            if len(variable_name) > 0:
+                                parse_mode = "find end"
+                        elif symbol in "=;":
+                            parse_mode = "find type"
+                            result = Variable()
+                            result.name = variable_name
+                            result.line_number = line_number
+                            result.position = arg_count if arg_mode else None
+                            result.function_name = function_name
+                            result.path = f"{graph.name}.{filename.name}"
+                            location_to_name_to_variables[location][result.name] = result
+                            type_name = variable_name = function_name = ""
+                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_':
+                            variable_name += symbol
+                        elif symbol in ",)" and arg_mode:
+                            parse_mode = "find type"
+                            result = Variable()
+                            result.name = variable_name
+                            result.line_number = line_number
+                            result.position = arg_count
+                            result.function_name = function_name
+                            result.path = f"{graph.name}.{filename.name}"
+                            location_to_name_to_variables[location][result.name] = result
+                            type_name = variable_name = function_name = ""
+                        else:
+                            if symbol == "(" and len(variable_name) > 0:
+                                arg_mode = True
+                                # print(f"FIND function {variable_name} in {location}") #
+                                function_name = variable_name
+                            parse_mode = "find type"
+                            variable_name = ""
+                            type_name = ""
+                    elif parse_mode == "find end":
+                        if symbol in " \t\n\r":
+                            pass
+                        elif symbol in "=;":
+                            parse_mode = "find type"
+                            result = Variable()
+                            result.name = variable_name
+                            result.line_number = line_number
+                            result.position = arg_count if arg_mode else None
+                            result.function_name = function_name
+                            result.path = f"{graph.name}.{filename.name}"
+                            location_to_name_to_variables[location][result.name] = result
+                            type_name = variable_name = function_name = ""
+                        elif symbol in ",)" and arg_mode:
+                            parse_mode = "find type"
+                            result = Variable()
+                            result.name = variable_name
+                            result.line_number = line_number
+                            result.position = arg_count
+                            result.function_name = function_name
+                            result.path = f"{graph.name}.{filename.name}"
+                            location_to_name_to_variables[location][result.name] = result
+                            type_name = variable_name = function_name = ""
+                        else:
+                            if symbol == "(":
+                                arg_mode = True
+                                function_name = variable_name
+                            parse_mode = "find type"
+                            variable_name = ""
+                            type_name = ""
+                    
+                    if function_search_mode:
+                        # print(f"FSM {symbol}") #
+                        if symbol in " \n\t\r":
+                            pass
+                        elif symbol == "{":
+                            current_function_name = function_name
+                            function_search_mode = False
+                        else:
+                            function_search_mode = False
+                    
+                    if arg_mode and symbol == ')':
+                        arg_mode = False
+                        arg_count = 0
+                        function_search_mode = True
+                    if arg_mode and symbol == ',':
+                        arg_count += 1
+                        
 
             allocations.append(allocation)
         
-        file_to_line_number_to_alloc_local_id : Dict[str, Dict[int, int]] = dict()
+        file_to_line_number_to_alloc_id : Dict[str, Dict[int, int]] = dict()
         file_to_method_to_order_to_arg_id : Dict[str, Dict[str, Dict[int, int]]] = dict()
+        file_to_function_to_name_to_local_id : Dict[str, Dict[str, Dict[str, int]]] = dict()
         with open(graph / "vertex_mappings.txt", encoding='utf-8') as file:
             for line in file.readlines():
                 number, vertex = line.split(": ", maxsplit=2)
@@ -307,34 +330,38 @@ def main() -> None:
                     method = method.split(')', 1)[1]
                     location = method.split("#", 1)[0].split("$", 1)[0]
                     line_number = int(line_number.removeprefix("lineNumber="))
-                    if location not in file_to_line_number_to_alloc_local_id:
-                        file_to_line_number_to_alloc_local_id[location] = dict()
-                    file_to_line_number_to_alloc_local_id[location][line_number] = number
+                    if location not in file_to_line_number_to_alloc_id:
+                        file_to_line_number_to_alloc_id[location] = dict()
+                    file_to_line_number_to_alloc_id[location][line_number] = number
                 elif vertex.startswith("PtArg"):
                     vertex = vertex.removeprefix("PtArg(")[:-2]
-                    print(vertex) ##
+                    # print(vertex) #
                     method, *_, index = vertex.split(", ")
                     method = method.split(')', 1)[1]
                     method = method.split('(', 1)[0] # without arguments
-                    print(method) ##
+                    # print(method) #
                     location, *_, method_name = split(r'[^\w_\.]', method) #method.split("#$")
                     index = int(index.removeprefix("index="))
                     if location not in file_to_method_to_order_to_arg_id:
                         file_to_method_to_order_to_arg_id[location] = dict()
                     if method_name not in file_to_method_to_order_to_arg_id[location]:
                         file_to_method_to_order_to_arg_id[location][method_name] = dict()
-                    print(file_to_method_to_order_to_arg_id) ##
+                    # print(file_to_method_to_order_to_arg_id) #
                     file_to_method_to_order_to_arg_id[location][method_name][index] = number
                 elif vertex.startswith("PtLocalVar"):
                     vertex = vertex.removeprefix("PtLocalVar(")[:-2]
-                    # print(vertex) ##
-                    method, *_, line_number = vertex.split(", ")
+                    # print(vertex) #
+                    method, *_, variable_name, _, line_number = vertex.split(", ")
                     method = method.split(')', 1)[1]
-                    location = method.split("#", 1)[0].split("$", 1)[0]
+                    method = method.split('(', 1)[0] # without arguments
+                    location, *_, method_name = split(r'[^\w_\.]', method)
                     line_number = int(line_number.removeprefix("lineNumber="))
-                    if location not in file_to_line_number_to_alloc_local_id:
-                        file_to_line_number_to_alloc_local_id[location] = dict()
-                    file_to_line_number_to_alloc_local_id[location][line_number] = number
+                    variable_name = variable_name.removeprefix("name='")[:-1]
+                    if location not in file_to_function_to_name_to_local_id:
+                        file_to_function_to_name_to_local_id[location] = dict()
+                    if method_name not in file_to_function_to_name_to_local_id[location]:
+                        file_to_function_to_name_to_local_id[location][method_name] = dict()
+                    file_to_function_to_name_to_local_id[location][method_name][variable_name] = number
                 else:
                     continue
         may_be : Set[Tuple[int, int]] = set()
@@ -345,53 +372,56 @@ def main() -> None:
         var_id_to_info : Dict[int, str] = {}
         for allocation in allocations:
             for concrete_alloc in allocation.dictionary:
-                print(file_to_line_number_to_alloc_local_id.keys(), allocation.path) ##
-                assert False
-                alloc_id = file_to_line_number_to_alloc_local_id[allocation.path][concrete_alloc.alloc_id]
+                # print(file_to_line_number_to_alloc_local_id.keys(), allocation.path) #
+                alloc_id = file_to_line_number_to_alloc_id[allocation.path][concrete_alloc.alloc_id]
                 alloc_id_to_info[alloc_id] = f"{allocation.path} alloc {concrete_alloc.alloc_id}"
-                for name in concrete_alloc.may_alias:
-                    var = location_to_name_to_variables[allocation.path][name]
+                for variable_name in concrete_alloc.may_alias:
+                    var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
                         assert var.position is not None
                         var_id = file_to_method_to_order_to_arg_id[allocation.path][var.function_name][var.position]
-                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({name}) of {var.function_name}"
+                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({variable_name}) of {var.function_name}"
                     else:
-                        var_id = file_to_line_number_to_alloc_local_id[allocation.path][var.line_number]
-                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {name}"
+                        print(allocation.path) ##
+                        print(file_to_line_number_to_alloc_id[allocation.path].keys()) ##
+                        print(var.line_number) ##
+                        print(f"({allocation.function_name})") ##
+                        var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
+                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     may_be.add((var_id, alloc_id))
-                for name in concrete_alloc.may_alias:
-                    var = location_to_name_to_variables[allocation.path][name]
+                for variable_name in concrete_alloc.may_alias:
+                    var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
                         assert var.position is not None
                         var_id = file_to_method_to_order_to_arg_id[allocation.path][var.function_name][var.position]
-                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({name}) of {var.function_name}"
+                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({variable_name}) of {var.function_name}"
                     else:
-                        var_id = file_to_line_number_to_alloc_local_id[allocation.path][var.line_number]
-                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {name}"
+                        var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
+                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     may_not_be.add((var_id, alloc_id))
-                for name in concrete_alloc.may_alias:
-                    var = location_to_name_to_variables[allocation.path][name]
+                for variable_name in concrete_alloc.may_alias:
+                    var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
                         assert var.position is not None
                         var_id = file_to_method_to_order_to_arg_id[allocation.path][var.function_name][var.position]
-                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({name}) of {var.function_name}"
+                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({variable_name}) of {var.function_name}"
                     else:
-                        var_id = file_to_line_number_to_alloc_local_id[allocation.path][var.line_number]
-                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {name}"
+                        var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
+                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     must_be.add((var_id, alloc_id))
-                for name in concrete_alloc.may_alias:
-                    var = location_to_name_to_variables[allocation.path][name]
+                for variable_name in concrete_alloc.may_alias:
+                    var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
                         assert var.position is not None
                         var_id = file_to_method_to_order_to_arg_id[allocation.path][var.function_name][var.position]
-                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({name}) of {var.function_name}"
+                        var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({variable_name}) of {var.function_name}"
                     else:
-                        var_id = file_to_line_number_to_alloc_local_id[allocation.path][var.line_number]
-                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {name}"
+                        var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
+                        var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     must_not_be.add((var_id, alloc_id))
 
         with open(graph / "results.txt", encoding='utf-8') as file:
