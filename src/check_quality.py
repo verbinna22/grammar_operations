@@ -231,7 +231,7 @@ def main() -> None:
                         if symbol in " \t\n\r":
                             if len(type_name) > 0:
                                 parse_mode = "find var"
-                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')) or symbol in "[]<>":
+                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')) or symbol in "[]<>,":
                             type_name += symbol
                         else:
                             type_name = ""
@@ -369,12 +369,16 @@ def main() -> None:
                 elif vertex.startswith("PtLocalVar"):
                     vertex = vertex.removeprefix("PtLocalVar(")[:-2]
                     # print(vertex) #
-                    method, *_, variable_name, _, line_number = vertex.split(", ")
+                    method, up = vertex.split(", name=")
+                    variable_name, up = up.split(", type=")
+                    line_number = up.split(", lineNumber=")[1]
+                    # method, *_, variable_name, _, line_number = vertex.split(", ")
+                    print(f"DATA {method}, {variable_name}, {line_number}, [{vertex}]") ##
                     method = method.split(')', 1)[1]
                     method = method.split('(', 1)[0] # without arguments
                     location, *_, method_name = split(r'[^\w_\.]', method)
-                    line_number = int(line_number.removeprefix("lineNumber="))
-                    variable_name = variable_name.removeprefix("name='")[:-1]
+                    line_number = int(line_number)
+                    variable_name = variable_name[1:-1]
                     if location not in file_to_function_to_name_to_local_id:
                         file_to_function_to_name_to_local_id[location] = dict()
                     if method_name not in file_to_function_to_name_to_local_id[location]:
@@ -405,6 +409,7 @@ def main() -> None:
             ("collections.Array1", "main", "b", "c"),
             ("collections.List1", "main", "%9", "c"),
             ("collections.List2", "main", "%9", "c"),
+            ("collections.Map1", "main", "%9", "c"),
             #("", "", "", ""),
         ]
         for loc, fun, num, name in loc_fun_num_name:
