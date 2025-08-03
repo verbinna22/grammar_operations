@@ -373,7 +373,7 @@ def main() -> None:
                     variable_name, up = up.split(", type=")
                     line_number = up.split(", lineNumber=")[1]
                     # method, *_, variable_name, _, line_number = vertex.split(", ")
-                    print(f"DATA {method}, {variable_name}, {line_number}, [{vertex}]") ##
+                    # print(f"DATA {method}, {variable_name}, {line_number}, [{vertex}]") #
                     method = method.split(')', 1)[1]
                     method = method.split('(', 1)[0] # without arguments
                     location, *_, method_name = split(r'[^\w_\.]', method)
@@ -410,8 +410,36 @@ def main() -> None:
             ("collections.List1", "main", "%9", "c"),
             ("collections.List2", "main", "%9", "c"),
             ("collections.Map1", "main", "%9", "c"),
+            ("cornerCases.AccessPath1", "main", "%4", "_4"),
+            ("cornerCases.FieldSensitivity1", "main", "b", "d"),
+            ("cornerCases.FieldSensitivity2", "test", "b", "d"),
+            ("cornerCases.FlowSensitivity1", "main", "%2", "b"),
+            ("cornerCases.FlowSensitivity1", "main", "%0", "a"),
+            ("cornerCases.ObjectSensitivity1", "main", "%10", "b4"),
+            ("cornerCases.ObjectSensitivity1", "main", "%8", "b3"),
+            ("cornerCases.ObjectSensitivity2", "main", "%8", "b4"),
+            ("cornerCases.ObjectSensitivity2", "main", "%6", "b3"),
+            ("cornerCases.StrongUpdate1", "main", "%3", "x"),
+            ("cornerCases.StrongUpdate1", "main", "%3", "y"),
+            ("cornerCases.StrongUpdate1", "main", "a", "b"),
+            ("cornerCases.StrongUpdate2", "main", "a", "b"),
+            ("cornerCases.StrongUpdate2", "main", "%5", "x"),
+            ("cornerCases.StrongUpdate2", "main", "%5", "y"),
             #("", "", "", ""),
         ]
+        loc_fun_pos_name_line : List[Tuple[str, str, int | None, str, int]] = [
+            ("cornerCases.AccessPath1", "main", None, "_4", 0),
+        ]
+        for loc, fun, pos, name, line in loc_fun_pos_name_line:
+            if loc in location_to_name_to_variables.keys():
+                nv = Variable()
+                nv.name = name
+                nv.position = pos
+                nv.path = loc
+                nv.line_number = line
+                nv.function_name = fun
+                location_to_name_to_variables[loc][name] = nv
+        
         for loc, fun, num, name in loc_fun_num_name:
             if loc in file_to_function_to_name_to_local_id.keys():
                 file_to_function_to_name_to_local_id[loc][fun][name] = file_to_function_to_name_to_local_id[loc][fun][num]
@@ -434,6 +462,7 @@ def main() -> None:
                 alloc_id = file_to_line_number_to_alloc_id[allocation.path][concrete_alloc.alloc_id]
                 alloc_id_to_info[alloc_id] = f"{allocation.path} alloc {concrete_alloc.alloc_id}"
                 for variable_name in concrete_alloc.may_alias:
+                    print(allocation.path) ##
                     var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
