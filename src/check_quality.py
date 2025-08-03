@@ -39,7 +39,7 @@ def transform_to_list(value: str) -> List[str]:
 
 def transform_str_to_allocation_info(stri: str) -> AllocationInfo:
     result = AllocationInfo()
-    # print(stri) ###
+    # print(stri) #
     assert stri[-1] == '}'
     stri = stri[:-1]
     pairs = [cp.split(":") for cp in stri.split(", ")]
@@ -85,7 +85,7 @@ def main() -> None:
                     if symbol == '\n':
                         line_number += 1
 
-                    # print(mode, symbol) ###
+                    # print(mode, symbol) #
                     if mode == "Benchmark find":
                         if symbol == 'B':
                             word = 'B'
@@ -152,8 +152,10 @@ def main() -> None:
                 for symbol in code:
                     if symbol == '\n':
                         line_number += 1
+                    if location == "collections.Array1":
+                        print(f"{symbol} {parse_mode}") ##
 
-                    # print(mode, symbol) ###
+                    # print(mode, symbol) #
                     if mode == "Benchmark find":
                         if symbol == 'B':
                             word = 'B'
@@ -191,7 +193,7 @@ def main() -> None:
                                 allocation = Allocation()
                                 allocation.path = location
                                 allocation.function_name = current_function_name
-                                print(f"FIND test in {location}") ##
+                                # print(f"FIND test in {location}") #
                             else:
                                 word = ""
                                 mode = "Benchmark find"
@@ -229,7 +231,7 @@ def main() -> None:
                         if symbol in " \t\n\r":
                             if len(type_name) > 0:
                                 parse_mode = "find var"
-                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')):
+                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')) or symbol in "[]":
                             type_name += symbol
                         else:
                             type_name = ""
@@ -239,13 +241,15 @@ def main() -> None:
                                 parse_mode = "find end"
                         elif symbol in "=;":
                             parse_mode = "find type"
-                            result = Variable()
-                            result.name = variable_name
-                            result.line_number = line_number
-                            result.position = arg_count if arg_mode else None
-                            result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
-                            location_to_name_to_variables[location][result.name] = result
+                            if len(variable_name) > 0:
+                                result = Variable()
+                                result.name = variable_name
+                                result.line_number = line_number
+                                result.position = arg_count if arg_mode else None
+                                result.function_name = function_name
+                                result.path = f"{graph.name}.{filename.name}"
+                                location_to_name_to_variables[location][result.name] = result
+                                print(f"FIND var ({variable_name}) in {location}") ##
                             type_name = variable_name = ""
                         elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')):
                             variable_name += symbol
@@ -258,6 +262,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
+                            print(f"FIND var ({variable_name}) in {location}") ##
                             type_name = variable_name = ""
                         else:
                             if symbol == "(" and len(variable_name) > 0:
@@ -279,6 +284,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
+                            print(f"FIND var ({variable_name}) in {location}") ##
                             type_name = variable_name = ""
                         elif symbol in ",)" and arg_mode:
                             parse_mode = "find type"
@@ -289,6 +295,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
+                            print(f"FIND var ({variable_name}) in {location}") ##
                             type_name = variable_name = ""
                         else:
                             if symbol == "(":
@@ -304,7 +311,7 @@ def main() -> None:
                                 type_name = ""
                     
                     if function_search_mode:
-                        print(f"FSM {symbol} {line_number}") ##
+                        # print(f"FSM {symbol} {line_number}") #
                         if symbol in " \n\t\r":
                             pass
                         elif symbol == "{":
@@ -320,8 +327,6 @@ def main() -> None:
                     if arg_mode and symbol == ',':
                         arg_count += 1
                     
-                    if location == "basic.Interprocedural2":
-                        print(f"{symbol} {parse_mode} {line_number} {function_name} {current_function_name} {type_name} {variable_name}") ##
                         
 
             allocations.append(allocation)
@@ -334,11 +339,15 @@ def main() -> None:
                 number, vertex = line.split(": ", maxsplit=2)
                 number = int(number)
                 if vertex.startswith("PtAllocVertex"):
+                    # print(vertex) #
                     vertex = vertex.removeprefix("PtAllocVertex(")[:-2]
-                    _, method, *_, line_number = vertex.split(", ")
+                    # _, method, *_, line_number = vertex.split(", ")
+                    postmethod = vertex.split(", method=")[1]
+                    method, line_number = postmethod.split(", lineNumber=")
+                    # print(method) #
                     method = method.split(')', 1)[1]
                     location = method.split("#", 1)[0].split("$", 1)[0]
-                    line_number = int(line_number.removeprefix("lineNumber="))
+                    line_number = int(line_number)
                     if location not in file_to_line_number_to_alloc_id:
                         file_to_line_number_to_alloc_id[location] = dict()
                     file_to_line_number_to_alloc_id[location][line_number] = number
@@ -393,19 +402,23 @@ def main() -> None:
             ("basic.ReturnValue2", "main", "%4", "b"),
             ("basic.SimpleAlias1", "main", "%0", "a"),
             ("basic.SimpleAlias1", "main", "%0", "b"),
+            ("collections.Array1", "main", "b", "c"),
+            ("collections.List1", "main", "%9", "c"),
             #("", "", "", ""),
         ]
         for loc, fun, num, name in loc_fun_num_name:
-            file_to_function_to_name_to_local_id[loc][fun][name] = file_to_function_to_name_to_local_id[loc][fun][num]
+            if loc in file_to_function_to_name_to_local_id.keys():
+                file_to_function_to_name_to_local_id[loc][fun][name] = file_to_function_to_name_to_local_id[loc][fun][num]
         
         loc_fun_pos_name : List[Tuple[str, str, int, str]] = [
             ("basic.Parameter1", "test", 0, "b"),
             ("basic.Parameter2", "test", 0, "b"),
         ]
         for loc, fun, pos, name in loc_fun_pos_name:
-            if fun not in file_to_function_to_name_to_local_id[loc].keys():
-                file_to_function_to_name_to_local_id[loc][fun] = dict()
-            file_to_function_to_name_to_local_id[loc][fun][name] = file_to_method_to_order_to_arg_id[loc][fun][pos]
+            if loc in file_to_function_to_name_to_local_id.keys():
+                if fun not in file_to_function_to_name_to_local_id[loc].keys():
+                    file_to_function_to_name_to_local_id[loc][fun] = dict()
+                file_to_function_to_name_to_local_id[loc][fun][name] = file_to_method_to_order_to_arg_id[loc][fun][pos]
         
         for allocation in allocations:
             if allocation.path in {"basic.ReturnValue3"}:
@@ -430,6 +443,7 @@ def main() -> None:
                         var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     may_be.add((var_id, alloc_id))
                 for variable_name in concrete_alloc.not_may_alias:
+                    print(f"MNA {list(map(lambda x: f"{x[0]}, {x[1].line_number}", location_to_name_to_variables[allocation.path].items()))}") ##
                     var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
