@@ -155,8 +155,8 @@ def main() -> None:
                 for symbol in code:
                     if symbol == '\n':
                         line_number += 1
-                    if location == "collections.Array1":
-                        print(f"{symbol} {parse_mode}") ##
+                    # if location == "collections.Array1":
+                    #     print(f"{symbol} {parse_mode}") #
 
                     # print(mode, symbol) #
                     if mode == "Benchmark find":
@@ -252,7 +252,7 @@ def main() -> None:
                                 result.function_name = function_name
                                 result.path = f"{graph.name}.{filename.name}"
                                 location_to_name_to_variables[location][result.name] = result
-                                print(f"FIND var ({variable_name}) in {location}") ##
+                                # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
                         elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')):
                             variable_name += symbol
@@ -265,7 +265,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
-                            print(f"FIND var ({variable_name}) in {location}") ##
+                            # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
                         else:
                             if symbol == "(" and len(variable_name) > 0:
@@ -287,7 +287,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
-                            print(f"FIND var ({variable_name}) in {location}") ##
+                            # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
                         elif symbol in ",)" and arg_mode:
                             parse_mode = "find type"
@@ -298,7 +298,7 @@ def main() -> None:
                             result.function_name = function_name
                             result.path = f"{graph.name}.{filename.name}"
                             location_to_name_to_variables[location][result.name] = result
-                            print(f"FIND var ({variable_name}) in {location}") ##
+                            # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
                         else:
                             if symbol == "(":
@@ -472,7 +472,7 @@ def main() -> None:
                 alloc_id = file_to_line_number_to_alloc_id[allocation.path][concrete_alloc.alloc_id]
                 alloc_id_to_info[alloc_id] = f"{allocation.path} alloc {concrete_alloc.alloc_id}"
                 for variable_name in concrete_alloc.may_alias:
-                    print(allocation.path) ##
+                    # print(allocation.path) #
                     var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
@@ -480,15 +480,15 @@ def main() -> None:
                         var_id = file_to_method_to_order_to_arg_id[allocation.path][var.function_name][var.position]
                         var_id_to_info[var_id] = f"{allocation.path} argument {var.position} ({variable_name}) of {var.function_name}"
                     else:
-                        print(f"PROCESS {allocation.path}") ##
-                        print(var.line_number) ##
-                        print(f"({allocation.function_name}) ({var.name})") ##
-                        print(file_to_function_to_name_to_local_id[allocation.path][allocation.function_name].keys()) ##
+                        # print(f"PROCESS {allocation.path}") #
+                        # print(var.line_number) #
+                        # print(f"({allocation.function_name}) ({var.name})") #
+                        # print(file_to_function_to_name_to_local_id[allocation.path][allocation.function_name].keys()) #
                         var_id = file_to_function_to_name_to_local_id[allocation.path][allocation.function_name][var.name]
                         var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     may_be.add((var_id, alloc_id))
                 for variable_name in concrete_alloc.not_may_alias:
-                    print(f"MNA {list(map(lambda x: f"{x[0]}, {x[1].line_number}", location_to_name_to_variables[allocation.path].items()))}") ##
+                    # print(f"MNA {list(map(lambda x: f"{x[0]}, {x[1].line_number}", location_to_name_to_variables[allocation.path].items()))}") #
                     var = location_to_name_to_variables[allocation.path][variable_name]
                     if var.is_arg():
                         assert var.function_name is not None
@@ -522,18 +522,19 @@ def main() -> None:
                         var_id_to_info[var_id] = f"{allocation.path} line {var.line_number} {variable_name}"
                     must_not_be.add((var_id, alloc_id))
 
+        # var alloc
         with open(graph / "results.txt", encoding='utf-8') as file:
             results = set(map(lambda l: tuple(map(int, l.split())), file.readlines()))
             for pair in results:
                 if pair not in may_be:
                     print(f"Violation FP: pair {pair} not in may be")
                     
-                    print(f"{alloc_id_to_info.get(pair[0])} <-> {var_id_to_info.get(pair[1])}")
+                    print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
                 if pair in must_not_be:
-                    print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[0])} <-> {var_id_to_info.get(pair[1])}")
+                    print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
             for pair in must_be:
                 if pair not in results:
-                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[0])} <-> {var_id_to_info.get(pair[1])}")
+                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
 
 if __name__ == "__main__":
     main()
