@@ -37,7 +37,7 @@ def transform_to_list(value: str) -> List[str]:
         return []
     return value.split(",")
 
-def transform_str_to_allocation_info(stri: str) -> AllocationInfo:
+def transform_str_to_allocation_info(stri: str) -> AllocationInfo | None:
     result = AllocationInfo()
     # print(stri) #
     assert stri[-1] == '}'
@@ -54,6 +54,8 @@ def transform_str_to_allocation_info(stri: str) -> AllocationInfo:
             result.not_may_alias = transform_to_list(pair[1])
         elif pair[0] == "notMustAlias":
             result.not_must_alias = transform_to_list(pair[1])
+        elif pair[0] == "NULLALLOC":
+            return None
         else:
             assert False
     return result
@@ -69,6 +71,7 @@ def main() -> None:
         allocations: List[Allocation] = []
         location_to_name_to_variables: Dict[str, Dict[str, Variable]] = {}
         for filename in benchmark:
+            print(filename) ##
             with open(filename, encoding='utf-8') as file:
                 code = file.read()
                 line_number = 1
@@ -210,7 +213,7 @@ def main() -> None:
                         if symbol == '"':
                             mode = "In String parse second"
                         elif symbol == ")":
-                            allocation.dictionary = [transform_str_to_allocation_info(d) for d in word[1:].split(",{")]
+                            allocation.dictionary = list(filter(lambda x: x is not None, [transform_str_to_allocation_info(d) for d in word[1:].split(",{")])) # type: ignore
                             for d in allocation.dictionary:
                                 # print(alloc_id_to_line) #
                                 d.alloc_id = alloc_id_to_line[d.alloc_id]
@@ -425,6 +428,13 @@ def main() -> None:
             ("cornerCases.StrongUpdate2", "main", "a", "b"),
             ("cornerCases.StrongUpdate2", "main", "%5", "x"),
             ("cornerCases.StrongUpdate2", "main", "%5", "y"),
+            ("generalJava.Exception1", "main", "%0", "a"),
+            ("generalJava.Exception1", "main", "%2", "b"),
+            ("generalJava.Exception2", "main", "%0", "a"),
+            ("generalJava.Exception2", "main", "%2", "b"),
+            ("generalJava.OuterClass1", "test", "a", "h"),
+            ("generalJava.StaticVariables1", "main", "%0", "b"),
+            ("generalJava.StaticVariables1", "main", "%0", "c"),
             #("", "", "", ""),
         ]
         loc_fun_pos_name_line : List[Tuple[str, str, int | None, str, int]] = [
