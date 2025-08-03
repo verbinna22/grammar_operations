@@ -231,7 +231,7 @@ def main() -> None:
                         if symbol in " \t\n\r":
                             if len(type_name) > 0:
                                 parse_mode = "find var"
-                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')) or symbol in "[]":
+                        elif (ord('a') <= ord(symbol) <= ord('z')) or (ord('A') <= ord(symbol) <= ord('Z')) or symbol == '_' or (ord('0') <= ord(symbol) <= ord('9')) or symbol in "[]<>":
                             type_name += symbol
                         else:
                             type_name = ""
@@ -404,6 +404,7 @@ def main() -> None:
             ("basic.SimpleAlias1", "main", "%0", "b"),
             ("collections.Array1", "main", "b", "c"),
             ("collections.List1", "main", "%9", "c"),
+            ("collections.List2", "main", "%9", "c"),
             #("", "", "", ""),
         ]
         for loc, fun, num, name in loc_fun_num_name:
