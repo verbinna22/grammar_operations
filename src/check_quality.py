@@ -71,13 +71,13 @@ def main() -> None:
         allocations: List[Allocation] = []
         location_to_name_to_variables: Dict[str, Dict[str, Variable]] = {}
         for filename in benchmark:
-            print(filename) ##
+            # print(filename) ##
             with open(filename, encoding='utf-8') as file:
                 code = file.read()
                 line_number = 1
                 location = f"{graph.name}.{filename.name.removesuffix(".java")}"
                 location_to_name_to_variables[location] = dict()
-                print(location) ##
+                # print(location) ##
                 alloc_id_to_line : Dict[int, int] = dict()
                 word = ""
                 mode = "Benchmark find"
@@ -525,16 +525,21 @@ def main() -> None:
         # var alloc
         with open(graph / "results.txt", encoding='utf-8') as file:
             results = set(map(lambda l: tuple(map(int, l.split())), file.readlines()))
-            for pair in results:
-                if pair not in may_be:
-                    print(f"Violation FP: pair {pair} not in may be")
+            # for pair in results:
+            #     if pair not in may_be:
+            #         print(f"Violation FP: pair {pair} not in may be {(pair[1], pair[0]) in may_be}")
                     
-                    print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
-                if pair in must_not_be:
-                    print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+            #         print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+            #     else:
+            #         print(f"Ok: pair {pair} in may be")
+            #         print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+            #     if pair in must_not_be:
+            #         print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
             for pair in must_be:
                 if pair not in results:
-                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])} {(pair[1], pair[0]) in results}")
+                # else:
+                #     print(f"Ok: pair {pair} must be and in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
 
 if __name__ == "__main__":
     main()

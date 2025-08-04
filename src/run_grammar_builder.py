@@ -10,7 +10,7 @@ def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     for graph in graphs.iterdir():
         print(graph)
-        if ord(graph.name[0]) < ord('j'):
+        if ord(graph.name[0]) >= ord('j'):
             continue
         initial_time = datetime.now()
         command : str = fr'''
