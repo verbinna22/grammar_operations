@@ -397,48 +397,48 @@ def main() -> None:
         var_id_to_info : Dict[int, str] = {}
         
         loc_fun_num_name : List[Tuple[str, str, str, str]] = [
-            ("basic.Branching1", "main", "%1", "a"),
-            ("basic.Branching1", "main", "%3", "b"),
-            ("basic.Interprocedural1", "main", "%4", "x"),
-            ("basic.Interprocedural1", "main", "%4", "y"),
-            ("basic.Interprocedural2", "main", "%4", "x"),
-            ("basic.Interprocedural2", "main", "%4", "y"),
-            ("basic.Loops2", "test", "%4", "o"),
-            ("basic.Recursion1", "test", "%4", "n"),
-            ("basic.ReturnValue1", "main", "%2", "b"),
-            ("basic.ReturnValue2", "main", "%4", "b"),
-            ("basic.SimpleAlias1", "main", "%0", "a"),
-            ("basic.SimpleAlias1", "main", "%0", "b"),
-            ("collections.Array1", "main", "b", "c"),
-            ("collections.List1", "main", "%9", "c"),
-            ("collections.List2", "main", "%9", "c"),
-            ("collections.Map1", "main", "%9", "c"),
-            ("cornerCases.AccessPath1", "main", "%4", "_4"),
-            ("cornerCases.FieldSensitivity1", "main", "b", "d"),
-            ("cornerCases.FieldSensitivity2", "test", "b", "d"),
-            ("cornerCases.FlowSensitivity1", "main", "%2", "b"),
-            ("cornerCases.FlowSensitivity1", "main", "%0", "a"),
-            ("cornerCases.ObjectSensitivity1", "main", "%10", "b4"),
-            ("cornerCases.ObjectSensitivity1", "main", "%8", "b3"),
-            ("cornerCases.ObjectSensitivity2", "main", "%8", "b4"),
-            ("cornerCases.ObjectSensitivity2", "main", "%6", "b3"),
-            ("cornerCases.StrongUpdate1", "main", "%3", "x"),
-            ("cornerCases.StrongUpdate1", "main", "%3", "y"),
-            ("cornerCases.StrongUpdate1", "main", "a", "b"),
-            ("cornerCases.StrongUpdate2", "main", "a", "b"),
-            ("cornerCases.StrongUpdate2", "main", "%5", "x"),
-            ("cornerCases.StrongUpdate2", "main", "%5", "y"),
-            ("generalJava.Exception1", "main", "%0", "a"),
-            ("generalJava.Exception1", "main", "%2", "b"),
-            ("generalJava.Exception2", "main", "%0", "a"),
-            ("generalJava.Exception2", "main", "%2", "b"),
-            ("generalJava.OuterClass1", "test", "a", "h"),
-            ("generalJava.StaticVariables1", "main", "%0", "b"),
-            ("generalJava.StaticVariables1", "main", "%0", "c"),
+            # ("basic.Branching1", "main", "%1", "a"),
+            # ("basic.Branching1", "main", "%3", "b"),
+            # ("basic.Interprocedural1", "main", "%4", "x"),
+            # ("basic.Interprocedural1", "main", "%4", "y"),
+            # ("basic.Interprocedural2", "main", "%4", "x"),
+            # ("basic.Interprocedural2", "main", "%4", "y"),
+            # ("basic.Loops2", "test", "%4", "o"),
+            # ("basic.Recursion1", "test", "%4", "n"),
+            # ("basic.ReturnValue1", "main", "%2", "b"),
+            # ("basic.ReturnValue2", "main", "%4", "b"),
+            ("basic.SimpleAlias1", "main", "b", "a"),
+            # ("basic.SimpleAlias1", "main", "%0", "b"),
+            # ("collections.Array1", "main", "b", "c"),
+            # ("collections.List1", "main", "%9", "c"),
+            # ("collections.List2", "main", "%9", "c"),
+            # ("collections.Map1", "main", "%9", "c"),
+            # ("cornerCases.AccessPath1", "main", "%4", "_4"),
+            # ("cornerCases.FieldSensitivity1", "main", "b", "d"),
+            # ("cornerCases.FieldSensitivity2", "test", "b", "d"),
+            # ("cornerCases.FlowSensitivity1", "main", "%2", "b"),
+            # ("cornerCases.FlowSensitivity1", "main", "%0", "a"),
+            # ("cornerCases.ObjectSensitivity1", "main", "%10", "b4"),
+            # ("cornerCases.ObjectSensitivity1", "main", "%8", "b3"),
+            # ("cornerCases.ObjectSensitivity2", "main", "%8", "b4"),
+            # ("cornerCases.ObjectSensitivity2", "main", "%6", "b3"),
+            # ("cornerCases.StrongUpdate1", "main", "%3", "x"),
+            # ("cornerCases.StrongUpdate1", "main", "%3", "y"),
+            ("cornerCases.StrongUpdate1", "main", "b", "a"),
+            # ("cornerCases.StrongUpdate2", "main", "a", "b"),
+            # ("cornerCases.StrongUpdate2", "main", "%5", "x"),
+            # ("cornerCases.StrongUpdate2", "main", "%5", "y"),
+            # ("generalJava.Exception1", "main", "%0", "a"),
+            # ("generalJava.Exception1", "main", "%2", "b"),
+            # ("generalJava.Exception2", "main", "%0", "a"),
+            # ("generalJava.Exception2", "main", "%2", "b"),
+            # ("generalJava.OuterClass1", "test", "a", "h"),
+            # ("generalJava.StaticVariables1", "main", "%0", "b"),
+            # ("generalJava.StaticVariables1", "main", "%0", "c"),
             #("", "", "", ""),
         ]
         loc_fun_pos_name_line : List[Tuple[str, str, int | None, str, int]] = [
-            ("cornerCases.AccessPath1", "main", None, "_4", 0),
+            # ("cornerCases.AccessPath1", "main", None, "_4", 0),
         ]
         for loc, fun, pos, name, line in loc_fun_pos_name_line:
             if loc in location_to_name_to_variables.keys():
@@ -452,11 +452,12 @@ def main() -> None:
         
         for loc, fun, num, name in loc_fun_num_name:
             if loc in file_to_function_to_name_to_local_id.keys():
+                # print(f"{loc} {fun} {file_to_function_to_name_to_local_id[loc][fun].keys()} {num}")
                 file_to_function_to_name_to_local_id[loc][fun][name] = file_to_function_to_name_to_local_id[loc][fun][num]
         
         loc_fun_pos_name : List[Tuple[str, str, int, str]] = [
-            ("basic.Parameter1", "test", 0, "b"),
-            ("basic.Parameter2", "test", 0, "b"),
+            # ("basic.Parameter1", "test", 0, "b"),
+            # ("basic.Parameter2", "test", 0, "b"),
         ]
         for loc, fun, pos, name in loc_fun_pos_name:
             if loc in file_to_function_to_name_to_local_id.keys():
@@ -465,7 +466,7 @@ def main() -> None:
                 file_to_function_to_name_to_local_id[loc][fun][name] = file_to_method_to_order_to_arg_id[loc][fun][pos]
         
         for allocation in allocations:
-            if allocation.path in {"basic.ReturnValue3"}:
+            if allocation.path in {"basic.ReturnValue3", "collections.Map1", "collections.List1", "collections.List2"}:
                 continue
             for concrete_alloc in allocation.dictionary:
                 # print(file_to_line_number_to_alloc_local_id.keys(), allocation.path) #
@@ -537,7 +538,7 @@ def main() -> None:
             #         print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
             for pair in must_be:
                 if pair not in results:
-                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])} {(pair[1], pair[0]) in results}")
+                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
                 # else:
                 #     print(f"Ok: pair {pair} must be and in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
 

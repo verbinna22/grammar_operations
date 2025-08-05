@@ -28,7 +28,7 @@ def main() -> None:
         # cd {FOLDER_WITH_SOLVER} && source ./venv/bin/activate && python3 -m cfpq_cli.run_all_pairs_cflr \
         #     IncrementalAllPairsCFLReachabilityMatrix \
         #     {graph / f'{graph.name}.g'} \
-        #     {'/mnt/data/MyOwnFolder/learning/p_algo/CFPQ_PyAlgo/test/pocr_data/java_points_to/java_points_to.cnf'} \
+        #     {'/mnt/data/MyOwnFolder/learning/p_algo/CFPQ_PyAlgo/test/pocr_data/java_points_to/java_points_to_.cnf'} \
         #     --time-limit {TIME_LIMIT} \
         #     --out {graph / 'results.txt'}"
         # '''
