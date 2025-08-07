@@ -64,10 +64,11 @@ def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     benchmarks = Path(FOLDER_WITH_BENCHMARKS)
     for graph in graphs.iterdir():
-        if ord(graph.name[0]) >= ord('j') or graph.name in {"basic", "cornerCases"}:
+        namespace, classname = graph.name.split("_")
+        if ord(namespace[0]) >= ord('j') or namespace in {"basic", "cornerCases"}:
             continue
         print(graph)
-        benchmark = (benchmarks / graph.name).glob('**/*.java',)
+        benchmark = (benchmarks / namespace).glob(f'**/{classname}.java',)
         allocations: List[Allocation] = []
         location_to_name_to_variables: Dict[str, Dict[str, Variable]] = {}
         for filename in benchmark:
@@ -75,7 +76,7 @@ def main() -> None:
             with open(filename, encoding='utf-8') as file:
                 code = file.read()
                 line_number = 1
-                location = f"{graph.name}.{filename.name.removesuffix(".java")}"
+                location = f"{namespace}.{filename.name.removesuffix(".java")}"
                 location_to_name_to_variables[location] = dict()
                 # print(location) ##
                 alloc_id_to_line : Dict[int, int] = dict()
@@ -250,7 +251,7 @@ def main() -> None:
                                 result.line_number = line_number
                                 result.position = arg_count if arg_mode else None
                                 result.function_name = function_name
-                                result.path = f"{graph.name}.{filename.name}"
+                                result.path = location
                                 location_to_name_to_variables[location][result.name] = result
                                 # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
@@ -263,7 +264,7 @@ def main() -> None:
                             result.line_number = line_number
                             result.position = arg_count
                             result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
+                            result.path = location
                             location_to_name_to_variables[location][result.name] = result
                             # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
@@ -285,7 +286,7 @@ def main() -> None:
                             result.line_number = line_number
                             result.position = arg_count if arg_mode else None
                             result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
+                            result.path = location
                             location_to_name_to_variables[location][result.name] = result
                             # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
@@ -296,7 +297,7 @@ def main() -> None:
                             result.line_number = line_number
                             result.position = arg_count
                             result.function_name = function_name
-                            result.path = f"{graph.name}.{filename.name}"
+                            result.path = location
                             location_to_name_to_variables[location][result.name] = result
                             # print(f"FIND var ({variable_name}) in {location}") #
                             type_name = variable_name = ""
