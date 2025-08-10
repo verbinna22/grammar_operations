@@ -470,7 +470,7 @@ def main() -> None:
             if allocation.path in {"basic.ReturnValue3", "collections.Map1", "collections.List1", "collections.List2"}:
                 continue
             for concrete_alloc in allocation.dictionary:
-                # print(file_to_line_number_to_alloc_local_id.keys(), allocation.path) #
+                # print(file_to_line_number_to_alloc_id.keys(), allocation.path) ##
                 alloc_id = file_to_line_number_to_alloc_id[allocation.path][concrete_alloc.alloc_id]
                 alloc_id_to_info[alloc_id] = f"{allocation.path} alloc {concrete_alloc.alloc_id}"
                 for variable_name in concrete_alloc.may_alias:
