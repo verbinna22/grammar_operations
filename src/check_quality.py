@@ -64,7 +64,7 @@ def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     benchmarks = Path(FOLDER_WITH_BENCHMARKS)
     for graph in graphs.iterdir():
-        if ord(graph.name[0]) >= ord('j') or graph.name in {"basic", "cornerCases"}:
+        if ord(graph.name[0]) >= ord('j') or graph.name in {"com_fasterxml_jackson"}:
             continue
         print(graph)
         benchmark = (benchmarks / graph.name).glob('**/*.java',)

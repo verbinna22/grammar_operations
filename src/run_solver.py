@@ -9,15 +9,15 @@ TIME_LIMIT : int  = 8 * 3600
 def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     for graph in graphs.iterdir():
-        print(graph)
-        if ord(graph.name[0]) >= ord('j'):
+        if ord(graph.name[0]) >= ord('j') or graph.name == "com_fasterxml_jackson":
             continue
+        print(graph)
         initial_time = datetime.now()
         command : str = fr'''
         /bin/bash -c "\
         cd {FOLDER_WITH_SOLVER} && source ./venv/bin/activate && python3 -m cfpq_cli.run_all_pairs_cflr \
             IncrementalAllPairsCFLReachabilityMatrix \
-            {graph / f'{graph.name}.g'} \
+            {graph / 'slx_result.txt.g'} \
             {graph / 'grammar.cfg'} \
             --time-limit {TIME_LIMIT} \
             --out {graph / 'results.txt'}"

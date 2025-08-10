@@ -9,14 +9,14 @@ TIME_LIMIT : int  = 3600
 def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     for graph in graphs.iterdir():
-        print(graph)
-        if ord(graph.name[0]) >= ord('j'):
+        if ord(graph.name[0]) >= ord('j') or graph.name == "com_fasterxml_jackson":
             continue
+        print(graph)
         initial_time = datetime.now()
         command : str = fr'''
         /bin/bash -c "\
         cd {FOLDER_WITH_BUILDER} && ./grammarOperations \
-            {graph / "contexts_numbers.txt"} \
+            {graph / "slx_result.txt.ctxn"} \
             {graph / 'grammar.cfg'} "\
         '''
         # print(command)
