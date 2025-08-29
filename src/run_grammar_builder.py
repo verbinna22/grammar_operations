@@ -9,8 +9,8 @@ TIME_LIMIT : int  = 3600
 def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     for graph in graphs.iterdir():
-        if ord(graph.name[0]) >= ord('j') or graph.name == "com_fasterxml_jackson":
-            continue
+        # if ord(graph.name[0]) >= ord('j') or graph.name == "com_fasterxml_jackson":
+        #     continue
         print(graph)
         initial_time = datetime.now()
         command : str = fr'''

@@ -9,29 +9,29 @@ TIME_LIMIT : int  = 8 * 3600
 def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     for graph in graphs.iterdir():
-        if ord(graph.name[0]) >= ord('j') or graph.name == "com_fasterxml_jackson":
-            continue
+        # if ord(graph.name[0]) >= ord('j') or graph.name == "com_fasterxml_jackson":
+        #     continue
         print(graph)
         initial_time = datetime.now()
-        command : str = fr'''
-        /bin/bash -c "\
-        cd {FOLDER_WITH_SOLVER} && source ./venv/bin/activate && python3 -m cfpq_cli.run_all_pairs_cflr \
-            IncrementalAllPairsCFLReachabilityMatrix \
-            {graph / 'slx_result.txt.g'} \
-            {graph / 'grammar.cfg'} \
-            --time-limit {TIME_LIMIT} \
-            --out {graph / 'results.txt'}"
-        '''
-        
         # command : str = fr'''
         # /bin/bash -c "\
         # cd {FOLDER_WITH_SOLVER} && source ./venv/bin/activate && python3 -m cfpq_cli.run_all_pairs_cflr \
         #     IncrementalAllPairsCFLReachabilityMatrix \
-        #     {graph / f'{graph.name}.g'} \
-        #     {'/mnt/data/MyOwnFolder/learning/p_algo/CFPQ_PyAlgo/test/pocr_data/java_points_to/java_points_to_.cnf'} \
+        #     {graph / 'slx_result.txt.g'} \
+        #     {graph / 'grammar.cfg'} \
         #     --time-limit {TIME_LIMIT} \
         #     --out {graph / 'results.txt'}"
         # '''
+        
+        command : str = fr'''
+        /bin/bash -c "\
+        cd {FOLDER_WITH_SOLVER} && source ./venv/bin/activate && python3 -m cfpq_cli.run_all_pairs_cflr \
+            IncrementalAllPairsCFLReachabilityMatrix \
+            {graph / f'{graph.name}.g'} \
+            {'/mnt/data/MyOwnFolder/learning/p_algo/CFPQ_PyAlgo/test/pocr_data/java_points_to/java_points_to_.cnf'} \
+            --time-limit {TIME_LIMIT} \
+            --out {graph / 'results.txt'}"
+        '''
         
         system(command)
         with open(graph / "time_to_solve_grammar.txt", mode='w', encoding='utf-8') as file:
