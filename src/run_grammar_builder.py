@@ -17,8 +17,12 @@ def main() -> None:
         /bin/bash -c "\
         cd {FOLDER_WITH_BUILDER} && ./grammarOperations \
             {graph / "slx_result.txt.ctxn"} \
-            {graph / 'grammar.cfg'} "\
+            {graph / 'grammar.cfg'}"\
         '''
+        # cd {FOLDER_WITH_BUILDER} && ./gradlew run --args='\
+        #     {graph / "slx_result.txt.ctxn"} \
+        #     {graph / 'grammar.cfg'}'"\
+        # '''
         # print(command)
         system(command)
         with open(graph / "time_to_generate_grammar.txt", mode='w', encoding='utf-8') as file:
