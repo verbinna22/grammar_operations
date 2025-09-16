@@ -8,7 +8,7 @@ FOLDER_WITH_SELECTX : str = "/mnt/data/MyOwnFolder/learning/p_algo/SelectX/Selec
 def main() -> None:
     graphs = Path(FOLDER_WITH_GRAPHS)
     for graph in graphs.iterdir():
-        # if ord(graph.name[0]) >= ord('j'):
+        # if ord(graph.name[0]) >= ord('j') or graph.name == "com_fasterxml_jackson":
         #     continue
         print(graph)
         selectx_folder = Path(FOLDER_WITH_SELECTX)
