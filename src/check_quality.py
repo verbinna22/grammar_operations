@@ -524,23 +524,25 @@ def main() -> None:
                     must_not_be.add((var_id, alloc_id))
 
         # var alloc
-        with open(graph / "results.txt", encoding='utf-8') as file:
-            results = set(map(lambda l: tuple(map(int, l.split())), file.readlines()))
-            # for pair in results:
-            #     if pair not in may_be:
-            #         print(f"Violation FP: pair {pair} not in may be {(pair[1], pair[0]) in may_be}")
-                    
-            #         print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
-            #     else:
-            #         print(f"Ok: pair {pair} in may be")
-            #         print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
-            #     if pair in must_not_be:
-            #         print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
-            for pair in must_be:
-                if pair not in results:
-                    print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
-                # else:
-                #     print(f"Ok: pair {pair} must be and in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+        with open(graph / "need_pairs.txt", encoding='utf-8', mode='w') as need:
+            with open(graph / "results.txt", encoding='utf-8') as file:
+                results = set(map(lambda l: tuple(map(int, l.split())), file.readlines()))
+                # for pair in results:
+                #     if pair not in may_be:
+                #         print(f"Violation FP: pair {pair} not in may be {(pair[1], pair[0]) in may_be}")
+                        
+                #         print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+                #     else:
+                #         print(f"Ok: pair {pair} in may be")
+                #         print(f"{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+                #     if pair in must_not_be:
+                #         print(f"Violation FP: pair {pair} in must not be\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+                for pair in must_be:
+                    if pair not in results:
+                        print(f"Violation TN: pair {pair} must be but not in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
+                    else:
+                        need.write(f"{pair[0]} -> {pair[1]}\n")
+                    #     print(f"Ok: pair {pair} must be and in results\n{alloc_id_to_info.get(pair[1])} <-> {var_id_to_info.get(pair[0])}")
 
 if __name__ == "__main__":
     main()
